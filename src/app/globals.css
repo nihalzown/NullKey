@@ -1,26 +1,31 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
+  --color-void: #020202;
+  --color-charcoal: #080809;
+  --color-accent: #10b981; /* Emerald-500 for our cyber/neon accents */
+  
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background-color: var(--color-void);
+    color: theme('colors.slate.200');
+    /* Next.js text antialiasing for crisp typography */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: theme('colors.emerald.500 / 30%');
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* Reusable Onyx Stealth Glass Panel */
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-xl border border-white/5 rounded-2xl shadow-2xl;
+  }
 }
