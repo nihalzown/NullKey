@@ -1,6 +1,20 @@
+// --- CHANGE: Added dynamic import to bypass Next.js 16 SSR Context errors ---
+'use client';
+
 import { Shield, Fingerprint } from "lucide-react";
 import { MotionPanel } from "@/components/ui/Motionpanel";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import dynamic from "next/dynamic";
+
+// Force the pure Wagmi button to ONLY mount after the client has hydrated the Web3Provider
+const OnyxConnectButton = dynamic(
+  () => import("@/components/ui/OnyxConnectButton").then((mod) => mod.OnyxConnectButton),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="w-48 h-10 bg-white/5 animate-pulse rounded-lg border border-white/10" />
+    )
+  }
+);
 
 export default function Home() {
   return (
@@ -23,8 +37,8 @@ export default function Home() {
           </p>
 
           {/* Web3 Connect Trigger */}
-          <div className="w-full flex justify-center mb-8">
-             <ConnectButton />
+          <div className="w-full flex justify-center mb-8 min-h-[40px]">
+             <OnyxConnectButton />
           </div>
 
           <div className="w-full flex items-center justify-between p-4 rounded-lg bg-[#080809] border border-white/5">

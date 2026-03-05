@@ -17,7 +17,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "viem": "^2.47.0",
-    "wagmi": "^3.5.0"
+    "wagmi": "^2.19.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -28,5 +28,12 @@
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom",
+    "wagmi": "$wagmi",
+    "viem": "$viem",
+    "@tanstack/react-query": "$@tanstack/react-query"
   }
 }
