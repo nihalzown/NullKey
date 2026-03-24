@@ -1,3 +1,4 @@
+// --- CHANGE: Added verification API call and verified state tracking ---
 import { useState } from 'react';
 import { useAccount, useSignMessage } from 'wagmi';
 import { SiweMessage } from 'siwe';
@@ -6,18 +7,20 @@ export function useWeb3Auth() {
   const { address, chainId } = useAccount();
   const { signMessageAsync } = useSignMessage();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isVerified, setIsVerified] = useState(false); // New state to trigger the UI confirmation
 
   const initiateHandshake = async () => {
     if (!address || !chainId) throw new Error("Wallet not connected");
 
     try {
       setIsAuthenticating(true);
+      setIsVerified(false);
 
-      // 1. Fetch the Challenge (Nonce) from our Step 2.1 API
+      // 1. Fetch Challenge
       const nonceRes = await fetch('/api/auth/nonce');
       const { nonce } = await nonceRes.json();
 
-      // 2. Construct the Standardized SIWE Message
+      // 2. Construct Message
       const message = new SiweMessage({
         domain: window.location.host,
         address,
@@ -28,24 +31,31 @@ export function useWeb3Auth() {
         nonce,
       });
 
-      // 3. Request the Cryptographic Signature from the Wallet
+      // 3. Request Wallet Signature
       const preparedMessage = message.prepareMessage();
-      const signature = await signMessageAsync({
-        message: preparedMessage,
+      const signature = await signMessageAsync({ message: preparedMessage });
+
+      // 4. Send to Backend for Cryptographic Verification
+      const verifyRes = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, signature }),
       });
 
-      console.log("Cryptographic Signature Acquired:", signature);
-      
-      //send this payload to the backend for verification.
-      return { message, signature };
+      const verifyData = await verifyRes.json();
+
+      if (verifyData.verified) {
+        setIsVerified(true); // Triggers the success UI
+      } else {
+        throw new Error("Signature verification failed on the server.");
+      }
 
     } catch (error) {
-      console.error("Handshake aborted or failed:", error);
-      throw error;
+      console.error("Handshake failed:", error);
     } finally {
       setIsAuthenticating(false);
     }
   };
 
-  return { initiateHandshake, isAuthenticating };
+  return { initiateHandshake, isAuthenticating, isVerified };
 }
